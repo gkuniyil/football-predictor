@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>La Liga Predictor</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --pitch: #14243A;
+    --pitch-dark: #0A1420;
+    --stripe: rgba(255,255,255,0.015);
+    --gold: #E0B04C;
+    --crimson: #D14B3E;
+    --ice: #6FA8C9;
+    --cream: #F0EEE4;
+    --line: rgba(240,238,228,0.12);
+    --muted: rgba(240,238,228,0.5);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background:
+      repeating-linear-gradient(
+        135deg,
+        var(--pitch-dark) 0px, var(--pitch-dark) 34px,
+        var(--stripe) 34px, var(--stripe) 68px
+      ),
+      var(--pitch-dark);
+    color: var(--cream);
+    font-family: 'IBM Plex Mono', monospace;
+    min-height: 100vh;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; padding: 48px 24px 80px; }
+  .eyebrow {
+    font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 10px;
+  }
+  h1 {
+    font-family: 'Fraunces', serif; font-weight: 600;
+    font-size: clamp(32px, 5vw, 52px); margin: 0 0 8px; line-height: 1.05;
+  }
+  .sub { color: var(--muted); font-size: 14px; margin-bottom: 40px; max-width: 620px; }
+
+  .panel {
+    background: var(--pitch);
+    border: 1px solid var(--line);
+    border-top: 2px solid var(--gold);
+    border-radius: 4px;
+    padding: 28px;
+    margin-bottom: 32px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  }
+  .panel-title { font-family: 'Fraunces', serif; font-size: 20px; margin: 0 0 4px; }
+  .panel-note { color: var(--muted); font-size: 12px; margin-bottom: 20px; }
+
+  .picker-row {
+    display: flex; gap: 16px; align-items: flex-end; flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .field { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 160px; }
+  .field label {
+    font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted);
+  }
+  select, input[type="date"] {
+    background: var(--pitch-dark);
+    border: 1px solid var(--line);
+    color: var(--cream);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px;
+    padding: 9px 10px;
+    border-radius: 3px;
+  }
+  select:focus, input:focus { outline: 1px solid var(--gold); }
+  button {
+    background: var(--gold);
+    color: var(--pitch-dark);
+    border: none;
+    font-family: 'IBM Plex Mono', monospace;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 10px 18px;
+    border-radius: 3px;
+    cursor: pointer;
+  }
+  button:hover { opacity: 0.9; }
+  button:disabled { opacity: 0.5; cursor: default; }
+
+  .bar-row { margin-bottom: 12px; }
+  .bar-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); margin-bottom: 5px; }
+  .bar-track { height: 9px; background: rgba(240,238,228,0.06); border-radius: 2px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 2px; transition: width 0.7s cubic-bezier(0.22,1,0.36,1); }
+  .bar-fill.home { background: linear-gradient(90deg, var(--gold), #F0C86E); }
+  .bar-fill.draw { background: rgba(240,238,228,0.35); }
+  .bar-fill.away { background: linear-gradient(90deg, var(--crimson), #E8705F); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  th {
+    text-align: left; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--muted); font-weight: 500; padding: 8px 10px; border-bottom: 1px solid var(--line);
+  }
+  th.num, td.num { text-align: right; }
+  td { padding: 9px 10px; border-bottom: 1px solid var(--line); }
+  tr.top-title td.rank { color: var(--gold); font-weight: 600; }
+  tr:hover td { background: rgba(243,239,226,0.03); }
+  .team-cell { font-family: 'Fraunces', serif; font-size: 14px; }
+  .rank { color: var(--muted); width: 24px; }
+  .result-tag {
+    font-size: 11px; padding: 2px 6px; border-radius: 2px; letter-spacing: 0.05em;
+  }
+  .result-tag.H { background: rgba(224,176,76,0.18); color: var(--gold); }
+  .result-tag.D { background: rgba(240,238,228,0.1); color: var(--muted); }
+  .result-tag.A { background: rgba(209,75,62,0.18); color: #E8705F; }
+
+  .champ-list { display: flex; flex-direction: column; gap: 10px; }
+  .champ-row { display: flex; justify-content: space-between; font-size: 13px; border-bottom: 1px dashed var(--line); padding-bottom: 8px; }
+  .champ-season { color: var(--muted); }
+  .champ-name { font-family: 'Fraunces', serif; }
+
+  .loading, .error { color: var(--muted); font-size: 13px; padding: 20px 0; }
+  .error { color: #D97757; }
+
+  .footer-note { margin-top: 40px; font-size: 11px; color: var(--muted); border-top: 1px solid var(--line); padding-top: 16px; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+<script type="text/babel">
+const { useState, useEffect } = React;
+const API_BASE = "http://127.0.0.1:8000";
+
+function ProbBar({ label, value, cls }) {
+  const pct = (value * 100).toFixed(1);
+  return (
+    <div className="bar-row">
+      <div className="bar-label"><span>{label}</span><span>{pct}%</span></div>
+      <div className="bar-track"><div className={`bar-fill ${cls}`} style={{ width: `${pct}%` }} /></div>
+    </div>
+  );
+}
+
+function MatchPredictor({ teams }) {
+  const [homeId, setHomeId] = useState("");
+  const [awayId, setAwayId] = useState("");
+  const [date, setDate] = useState("2026-05-10");
+  const [prediction, setPrediction] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const runPredict = () => {
+    if (!homeId || !awayId) return;
+    setLoading(true);
+    setError(null);
+    setPrediction(null);
+    fetch(`${API_BASE}/predict?home_team_id=${homeId}&away_team_id=${awayId}&date=${date}`)
+      .then(res => { if (!res.ok) throw new Error(); return res.json(); })
+      .then(data => { setPrediction(data); setLoading(false); })
+      .catch(() => { setError(true); setLoading(false); });
+  };
+
+  const homeName = teams.find(t => t.team_id == homeId)?.name || "Home";
+  const awayName = teams.find(t => t.team_id == awayId)?.name || "Away";
+
+  return (
+    <div className="panel">
+      <div className="panel-title">Match Predictor</div>
+      <div className="panel-note">Pick any two teams and a date to see win/draw/loss odds</div>
+
+      <div className="picker-row">
+        <div className="field">
+          <label>Home team</label>
+          <select value={homeId} onChange={e => setHomeId(e.target.value)}>
+            <option value="">Select team…</option>
+            {teams.map(t => <option key={t.team_id} value={t.team_id}>{t.name}</option>)}
+          </select>
+        </div>
+        <div className="field">
+          <label>Away team</label>
+          <select value={awayId} onChange={e => setAwayId(e.target.value)}>
+            <option value="">Select team…</option>
+            {teams.map(t => <option key={t.team_id} value={t.team_id}>{t.name}</option>)}
+          </select>
+        </div>
+        <div className="field" style={{ flex: 0.6 }}>
+          <label>Match date</label>
+          <input type="date" value={date} onChange={e => setDate(e.target.value)} />
+        </div>
+        <button onClick={runPredict} disabled={!homeId || !awayId || loading}>
+          {loading ? "Predicting…" : "Predict"}
+        </button>
+      </div>
+
+      {error && <div className="error">Couldn't reach the prediction API.</div>}
+      {prediction && (
+        <div>
+          <ProbBar label={`${homeName} win`} value={prediction.home_win} cls="home" />
+          <ProbBar label="Draw" value={prediction.draw} cls="draw" />
+          <ProbBar label={`${awayName} win`} value={prediction.away_win} cls="away" />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ChampionsPanel() {
+  const [champs, setChamps] = useState(null);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetch(`${API_BASE}/champions`)
+      .then(res => { if (!res.ok) throw new Error(); return res.json(); })
+      .then(setChamps)
+      .catch(() => setError(true));
+  }, []);
+
+  return (
+    <div className="panel">
+      <div className="panel-title">Recent La Liga Champions</div>
+      <div className="panel-note">Top of table by points, last 5 seasons in the dataset</div>
+      {error && <div className="error">Couldn't load champions.</div>}
+      {!error && !champs && <div className="loading">Loading…</div>}
+      {champs && (
+        <div className="champ-list">
+          {champs.map(c => (
+            <div className="champ-row" key={c.season}>
+              <span className="champ-season">{c.season}</span>
+              <span className="champ-name">{c.champion}</span>
+              <span className="champ-season">{c.points} pts</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function MatchHistory() {
+  const [beforeDate, setBeforeDate] = useState("2026-02-01");
+  const [rows, setRows] = useState(null);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const load = () => {
+    setLoading(true);
+    setError(null);
+    fetch(`${API_BASE}/matches?before_date=${beforeDate}&limit=20`)
+      .then(res => { if (!res.ok) throw new Error(); return res.json(); })
+      .then(data => { setRows(data); setLoading(false); })
+      .catch(() => { setError(true); setLoading(false); });
+  };
+
+  useEffect(load, []);
+
+  return (
+    <div className="panel">
+      <div className="panel-title">Match History</div>
+      <div className="panel-note">Real results before a chosen date — this is the data the model actually sees</div>
+
+      <div className="picker-row">
+        <div className="field" style={{ flex: 0.6 }}>
+          <label>Show matches before</label>
+          <input type="date" value={beforeDate} onChange={e => setBeforeDate(e.target.value)} />
+        </div>
+        <button onClick={load} disabled={loading}>{loading ? "Loading…" : "Refresh"}</button>
+      </div>
+
+      {error && <div className="error">Couldn't load match history.</div>}
+      {rows && (
+        <table>
+          <thead>
+            <tr><th>Date</th><th>Home</th><th className="num">Score</th><th>Away</th><th>Result</th></tr>
+          </thead>
+          <tbody>
+            {rows.map((m, i) => (
+              <tr key={i}>
+                <td>{m.date}</td>
+                <td className="team-cell">{m.home_name}</td>
+                <td className="num">{m.home_goals} – {m.away_goals}</td>
+                <td className="team-cell">{m.away_name}</td>
+                <td><span className={`result-tag ${m.result}`}>{m.result}</span></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+}
+
+function StandingsTable() {
+  const [rows, setRows] = useState(null);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    fetch(`${API_BASE}/simulate-season?cutoff_date=2026-02-01&n_simulations=300`)
+      .then(res => { if (!res.ok) throw new Error(); return res.json(); })
+      .then(data => {
+        const arr = Object.entries(data).map(([team, stats]) => ({ team, ...stats }));
+        arr.sort((a, b) => b.title_probability - a.title_probability || b.avg_points - a.avg_points);
+        setRows(arr);
+      })
+      .catch(() => setError(true));
+  }, []);
+
+  return (
+    <div className="panel">
+      <div className="panel-title">Projected Standings</div>
+      <div className="panel-note">300-simulation Monte Carlo projection from Feb 1, 2026 (reduced for live demo speed — full model runs 10,000)</div>
+      {error && <div className="error">Couldn't reach the simulation API.</div>}
+      {!error && !rows && <div className="loading">Running simulations… this can take a minute.</div>}
+      {rows && (
+        <table>
+          <thead>
+            <tr><th className="rank">#</th><th>Team</th><th className="num">Avg Pts</th><th className="num">Title %</th><th className="num">Top 4 %</th></tr>
+          </thead>
+          <tbody>
+            {rows.map((r, i) => (
+              <tr key={r.team} className={r.title_probability > 0.3 ? "top-title" : ""}>
+                <td className="rank">{i + 1}</td>
+                <td className="team-cell">{r.team}</td>
+                <td className="num">{r.avg_points.toFixed(1)}</td>
+                <td className="num">{(r.title_probability * 100).toFixed(1)}%</td>
+                <td className="num">{(r.top4_probability * 100).toFixed(1)}%</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+}
+
+function App() {
+  const [teams, setTeams] = useState([]);
+
+  useEffect(() => {
+    fetch(`${API_BASE}/teams`).then(res => res.json()).then(setTeams).catch(() => {});
+  }, []);
+
+  return (
+    <div className="wrap">
+      <div className="eyebrow">La Liga · 2025-26</div>
+      <h1>Season Predictor</h1>
+      <p className="sub">
+        Elo ratings, form, and venue splits feed an XGBoost classifier;
+        Monte Carlo simulation turns match-by-match odds into a title race.
+      </p>
+
+      <MatchPredictor teams={teams} />
+      <ChampionsPanel />
+      <MatchHistory />
+      <StandingsTable />
+
+      <div className="footer-note">
+        Model trained on 5 seasons of La Liga results · leakage-safe, point-in-time features · gkuniyil/league-predictor
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

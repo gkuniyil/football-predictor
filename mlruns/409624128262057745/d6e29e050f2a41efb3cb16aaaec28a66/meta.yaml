@@ -1,0 +1,14 @@
+artifact_uri: file:///Users/gayathrikuniyil/league_football_prediction/mlruns/409624128262057745/d6e29e050f2a41efb3cb16aaaec28a66/artifacts
+end_time: 1786218590788
+entry_point_name: ''
+experiment_id: '409624128262057745'
+lifecycle_stage: active
+run_id: d6e29e050f2a41efb3cb16aaaec28a66
+run_name: rogue-mare-336
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1786218589277
+status: 3
+tags: []
+user_id: gayathrikuniyil

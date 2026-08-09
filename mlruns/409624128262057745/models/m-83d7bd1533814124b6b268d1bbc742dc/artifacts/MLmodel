@@ -1,0 +1,22 @@
+artifact_path: file:///Users/gayathrikuniyil/league_football_prediction/mlruns/409624128262057745/models/m-83d7bd1533814124b6b268d1bbc742dc/artifacts
+flavors:
+  python_function:
+    data: model.xgb
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.xgboost
+    python_version: 3.9.6
+  xgboost:
+    code: null
+    data: model.xgb
+    model_class: xgboost.sklearn.XGBClassifier
+    model_format: xgb
+    xgb_version: 2.1.4
+mlflow_version: 3.1.4
+model_id: m-83d7bd1533814124b6b268d1bbc742dc
+model_size_bytes: 345478
+model_uuid: m-83d7bd1533814124b6b268d1bbc742dc
+prompts: null
+run_id: 30631b52c6f94f478891fad0065be091
+utc_time_created: '2026-08-08 19:40:31.657605'

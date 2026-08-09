@@ -1,0 +1,14 @@
+artifact_uri: file:///Users/gayathrikuniyil/league_football_prediction/mlruns/409624128262057745/30631b52c6f94f478891fad0065be091/artifacts
+end_time: 1786218033322
+entry_point_name: ''
+experiment_id: '409624128262057745'
+lifecycle_stage: active
+run_id: 30631b52c6f94f478891fad0065be091
+run_name: loud-shark-40
+source_name: ''
+source_type: 4
+source_version: ''
+start_time: 1786218031441
+status: 3
+tags: []
+user_id: gayathrikuniyil

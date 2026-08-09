@@ -1,0 +1,10 @@
+artifact_location: file:///Users/gayathrikuniyil/league_football_prediction/mlruns/409624128262057745/models/m-4fe00c29115043aa8d6a2f56e811af48/artifacts
+creation_timestamp: 1786218589437
+experiment_id: '409624128262057745'
+last_updated_timestamp: 1786218590786
+model_id: m-4fe00c29115043aa8d6a2f56e811af48
+model_type: null
+name: model
+source_run_id: d6e29e050f2a41efb3cb16aaaec28a66
+status: 2
+status_message: null
