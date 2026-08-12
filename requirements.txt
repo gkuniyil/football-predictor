@@ -4,9 +4,11 @@ sqlalchemy
 psycopg2-binary
 python-dotenv
 requests
+redis
 xgboost
 scikit-learn
 mlflow
 fastapi
 uvicorn
 pytest
+prometheus-fastapi-instrumentator

@@ -197,17 +197,20 @@ def train_classifier():
 # STEP 5: pick a cutoff date, compute REAL standings as of that date,
 # pull REAL remaining fixtures, build features for them
 # ---------------------------------------------------------------------------
-def get_standings_as_of(cutoff_date):
-    """Computes real league standings using only matches before cutoff_date."""
+def get_standings_as_of(cutoff_date, season_start="2025-08-01"):
+    """Computes real league standings using only matches from the CURRENT
+    season (season_start onward) before cutoff_date -- without this bound,
+    it silently sums points across all 5 seasons in the dataset."""
     query = text("""
         SELECT m.home_team_id, m.away_team_id, m.result,
                th.name AS home_name, ta.name AS away_name
         FROM matches m
         JOIN teams th ON m.home_team_id = th.team_id
         JOIN teams ta ON m.away_team_id = ta.team_id
-        WHERE m.date < :cutoff AND m.competition = 'la_liga'
+        WHERE m.date >= :season_start AND m.date < :cutoff
+          AND m.competition = 'la_liga'
     """)
-    played = pd.read_sql(query, engine, params={"cutoff": cutoff_date})
+    played = pd.read_sql(query, engine, params={"season_start": season_start, "cutoff": cutoff_date})
 
     standings = {}
     for _, row in played.iterrows():
@@ -224,7 +227,7 @@ def get_standings_as_of(cutoff_date):
     return standings
 
 
-def get_remaining_fixtures(cutoff_date, feature_columns):
+def get_remaining_fixtures(cutoff_date, feature_columns, season_end="2026-07-01"):
     """Pulls real fixtures after cutoff_date, builds features for each."""
     query = text("""
         SELECT m.match_id, m.date, m.home_team_id, m.away_team_id,
@@ -232,11 +235,11 @@ def get_remaining_fixtures(cutoff_date, feature_columns):
         FROM matches m
         JOIN teams th ON m.home_team_id = th.team_id
         JOIN teams ta ON m.away_team_id = ta.team_id
-        WHERE m.date >= :cutoff
+        WHERE m.date >= :cutoff AND m.date < :season_end
         ORDER BY m.date
     """)
-    fixtures = pd.read_sql(query, engine, params={"cutoff": cutoff_date})
-
+    fixtures = pd.read_sql(query, engine, params={"cutoff": cutoff_date, "season_end": season_end})
+    ...
     rows = []
     for _, row in fixtures.iterrows():
         feats = build_features_for_match(row["home_team_id"], row["away_team_id"], row["date"])
