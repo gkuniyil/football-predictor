@@ -133,7 +133,7 @@
 
 <script type="text/babel">
 const { useState, useEffect } = React;
-const API_BASE = "http://127.0.0.1:8000";
+const API_BASE = "https://football-predictor-production-f666.up.railway.app";
 
 function ProbBar({ label, value, cls }) {
   const pct = (value * 100).toFixed(1);
@@ -301,7 +301,7 @@ function StandingsTable() {
     fetch(`${API_BASE}/simulate-season?cutoff_date=2026-02-01&n_simulations=300`)
       .then(res => { if (!res.ok) throw new Error(); return res.json(); })
       .then(data => {
-        const arr = Object.entries(data).map(([team, stats]) => ({ team, ...stats }));
+        const arr = Object.entries(data.results).map(([team, stats]) => ({ team, ...stats }));
         arr.sort((a, b) => b.title_probability - a.title_probability || b.avg_points - a.avg_points);
         setRows(arr);
       })
